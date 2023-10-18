@@ -16,7 +16,7 @@ jobs:
 
       - name: Build
         run: |
-          pip3 install meson
+          pip3 install meson ninja
           wget https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/1.22.6/gstreamer-1.22.6.tar.gz
           tar -xf gstreamer-1.22.6.tar.gz
           cd gstreamer-1.22.6
