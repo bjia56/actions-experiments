@@ -13,8 +13,6 @@ jobs:
       - name: add file
         run: |
           echo foo > test.txt
-          git add test.txt
-          git commit -m "add a test file"
           
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
