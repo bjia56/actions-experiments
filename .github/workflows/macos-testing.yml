@@ -1,0 +1,7 @@
+name: Test on MacOS
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: fawazahmed0/action-debug@main
