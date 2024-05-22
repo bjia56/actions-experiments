@@ -3,6 +3,6 @@ on:
   workflow_dispatch:
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - uses: fawazahmed0/action-debug@main
