@@ -12,7 +12,10 @@ jobs:
       - name: Run establish a cf tunnel
         uses: vmactions/cf-tunnel@v0
         with:
-          protocol: tcp
-          port: 10443
+          protocol: http
+          port: 11080
 
-      - uses: fawazahmed0/action-debug@main
+      - name: Wait to exit
+        shell: bash
+        run: |
+          while [ ! -f ./continue ]; do sleep 5; done
