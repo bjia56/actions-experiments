@@ -6,16 +6,6 @@ jobs:
     runs-on: windows-2019
     
     steps:
-      - name: Install WSL
-        uses: Vampire/setup-wsl@v3
-
-      - uses: fawazahmed0/action-debug@main
-
-      - name: Start WSL in background
-        shell: wsl-bash {0}
-        run: |
-          bash -c "tail -f /dev/null" &
-
       - name: Install scrypted server
         uses: scryptedapp/setup-scrypted@v0.0.2
 
