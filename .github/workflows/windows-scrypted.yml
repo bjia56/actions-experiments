@@ -7,6 +7,10 @@ jobs:
     
     steps:
       - name: Install WSL
+        run: |
+          wsl.exe --update --web-download
+
+      - name: Install WSL
         uses: Vampire/setup-wsl@v3
 
       - name: Install scrypted server
@@ -18,7 +22,9 @@ jobs:
           protocol: http
           port: 11080
 
+      - uses: fawazahmed0/action-debug@main
       - name: Wait to exit
+        if: false
         shell: bash
         run: |
           while [ ! -f ./continue ]; do sleep 5; done
