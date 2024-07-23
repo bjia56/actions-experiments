@@ -1,0 +1,8 @@
+name: Test on Windows
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: fawazahmed0/action-debug@main
