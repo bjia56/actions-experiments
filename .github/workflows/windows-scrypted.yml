@@ -6,6 +6,9 @@ jobs:
     runs-on: windows-2019
     
     steps:
+      - name: Install WSL
+        uses: Vampire/setup-wsl@v3
+
       - name: Install scrypted server
         uses: scryptedapp/setup-scrypted@v0.0.2
 
