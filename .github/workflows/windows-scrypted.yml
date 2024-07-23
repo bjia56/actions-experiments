@@ -9,9 +9,9 @@ jobs:
       - name: Install WSL
         uses: Vampire/setup-wsl@v3
 
-      - name: Install WSL
+      - name: Update permissions
         run: |
-          wsl.exe --update --web-download
+          Remove-LocalGroupMember -Group "Administrators" -Member runneradmin
 
       - name: Install scrypted server
         uses: scryptedapp/setup-scrypted@v0.0.2
