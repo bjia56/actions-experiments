@@ -9,9 +9,7 @@ jobs:
       - name: Install WSL
         uses: Vampire/setup-wsl@v3
 
-      - name: Update permissions
-        run: |
-          Remove-LocalGroupMember -Group "Administrators" -Member runneradmin
+      - uses: fawazahmed0/action-debug@main
 
       - name: Install scrypted server
         uses: scryptedapp/setup-scrypted@v0.0.2
@@ -22,9 +20,7 @@ jobs:
           protocol: http
           port: 11080
 
-      - uses: fawazahmed0/action-debug@main
       - name: Wait to exit
-        if: false
         shell: bash
         run: |
           while [ ! -f ./continue ]; do sleep 5; done
