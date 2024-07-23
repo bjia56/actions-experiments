@@ -7,11 +7,11 @@ jobs:
     
     steps:
       - name: Install WSL
-        run: |
-          wsl.exe --update --web-download
+        uses: Vampire/setup-wsl@v3
 
       - name: Install WSL
-        uses: Vampire/setup-wsl@v3
+        run: |
+          wsl.exe --update --web-download
 
       - name: Install scrypted server
         uses: scryptedapp/setup-scrypted@v0.0.2
