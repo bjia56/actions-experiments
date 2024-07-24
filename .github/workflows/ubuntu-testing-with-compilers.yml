@@ -13,5 +13,5 @@ jobs:
       - name: Set up cosmocc
         uses: bjia56/setup-cosmocc@v0.0.3
         with:
-          version: 3.5.4
+          version: 3.6.0
       - uses: fawazahmed0/action-debug@main
