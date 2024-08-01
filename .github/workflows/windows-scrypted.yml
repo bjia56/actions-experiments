@@ -10,7 +10,7 @@ jobs:
         uses: scryptedapp/setup-scrypted@v0.0.2
 
       - name: Run establish a cf tunnel
-        uses: bjia56/cf-tunnel@win-fixes
+        uses: vmactions/cf-tunnel@main
         with:
           protocol: http
           port: 11080
