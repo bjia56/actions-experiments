@@ -1,0 +1,20 @@
+name: Test Scrypted on Ubuntu
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Install scrypted server
+        uses: scryptedapp/setup-scrypted@v0.0.2
+
+      - name: Run establish a cf tunnel
+        uses: vmactions/cf-tunnel@main
+        with:
+          protocol: http
+          port: 11080
+
+      - name: Wait to exit
+        run: |
+          while [ ! -f ./continue ]; do sleep 5; done
