@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Install scrypted server
         uses: scryptedapp/setup-scrypted@v0.0.2
+        with:
+          version: beta
 
       - name: Run establish a cf tunnel
         uses: vmactions/cf-tunnel@main
