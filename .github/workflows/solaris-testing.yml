@@ -1,0 +1,11 @@
+name: Test on Solaris
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start VM
+        id: vm
+        uses: vmactions/solaris-vm@v1
+      - uses: fawazahmed0/action-debug@main
