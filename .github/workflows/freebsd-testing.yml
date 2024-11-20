@@ -1,0 +1,11 @@
+name: Test on FreeBSD
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start VM
+        id: vm
+        uses: vmactions/freebsd-vm@v1
+      - uses: fawazahmed0/action-debug@main
