@@ -8,4 +8,6 @@ jobs:
       - name: Start VM
         id: vm
         uses: vmactions/solaris-vm@v1
+        with:
+          sync: sshfs
       - uses: fawazahmed0/action-debug@main
