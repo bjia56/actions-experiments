@@ -10,4 +10,5 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           release: "15.0"
+          sync: sshfs
       - uses: fawazahmed0/action-debug@main
