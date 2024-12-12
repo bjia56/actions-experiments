@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Start VM
         id: vm
-        uses: vmactions/solaris-vm@v1
+        uses: bjia56/solaris-vm@nfs
         with:
-          sync: sshfs
+          sync: nfs
       - uses: fawazahmed0/action-debug@main
