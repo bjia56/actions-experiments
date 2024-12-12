@@ -7,8 +7,8 @@ jobs:
     steps:
       - name: Start VM
         id: vm
-        uses: vmactions/freebsd-vm@v1
+        uses: bjia56/freebsd-vm@nfs
         with:
           release: "15.0"
-          sync: sshfs
+          sync: nfs
       - uses: fawazahmed0/action-debug@main
