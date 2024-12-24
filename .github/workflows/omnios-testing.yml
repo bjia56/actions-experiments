@@ -1,0 +1,13 @@
+name: Test on OmniOS
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start VM
+        id: vm
+        uses: vmactions/omnios-vm@v1
+        with:
+          sync: sshfs
+      - uses: fawazahmed0/action-debug@main
