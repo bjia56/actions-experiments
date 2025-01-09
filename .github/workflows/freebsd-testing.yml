@@ -1,6 +1,11 @@
 name: Test on FreeBSD
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -11,4 +16,5 @@ jobs:
         with:
           release: "15.0"
           sync: sshfs
+          arch: ${{ inputs.arch }}
       - uses: fawazahmed0/action-debug@main
