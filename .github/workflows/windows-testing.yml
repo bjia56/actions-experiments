@@ -5,4 +5,4 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
-      - uses: fawazahmed0/action-debug@main
+      - uses: fawazahmed0/action-debug-vscode@v3
