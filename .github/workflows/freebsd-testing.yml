@@ -6,6 +6,10 @@ on:
         required: true
         type: string
         default: x86_64
+      release:
+        required: true
+        type: string
+        default: 15.0
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,7 +18,7 @@ jobs:
         id: vm
         uses: vmactions/freebsd-vm@v1
         with:
-          release: "15.0"
+          release: ${{ inputs.release }}
           sync: sshfs
           arch: ${{ inputs.arch }}
       - uses: fawazahmed0/action-debug@main
