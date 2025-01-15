@@ -18,7 +18,7 @@ jobs:
         id: vm
         uses: vmactions/netbsd-vm@v1
         with:
-          sync: sshfs
+          sync: nfs
           arch: ${{ inputs.arch }}
           release: ${{ inputs.release }}
       - uses: fawazahmed0/action-debug@main

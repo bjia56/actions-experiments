@@ -1,6 +1,15 @@
 name: Test on OpenBSD
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        required: true
+        type: string
+        default: x86_64
+      release:
+        required: true
+        type: string
+        default: 7.6
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -9,5 +18,7 @@ jobs:
         id: vm
         uses: vmactions/openbsd-vm@v1
         with:
-          sync: sshfs
+          sync: nfs
+          arch: ${{ inputs.arch }}
+          release: ${{ inputs.release }}
       - uses: fawazahmed0/action-debug@main

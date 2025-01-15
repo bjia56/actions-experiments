@@ -18,7 +18,7 @@ jobs:
         id: vm
         uses: vmactions/freebsd-vm@v1
         with:
-          release: ${{ inputs.release }}
-          sync: sshfs
+          sync: nfs
           arch: ${{ inputs.arch }}
+          release: ${{ inputs.release }}
       - uses: fawazahmed0/action-debug@main
