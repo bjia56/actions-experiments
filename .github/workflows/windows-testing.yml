@@ -7,7 +7,7 @@ jobs:
     steps:
       - shell: bash
         run: |
-          mkdir ~/.local/bin
+          mkdir -p ~/.local/bin
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           cd $HOME/.local/bin
           curl -L -o wget https://cosmo.zip/pub/cosmos/bin/wget
