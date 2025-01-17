@@ -1,8 +1,13 @@
 name: Test on Ubuntu
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     steps:
       - uses: fawazahmed0/action-debug@main
