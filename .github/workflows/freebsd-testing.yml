@@ -21,4 +21,4 @@ jobs:
           sync: nfs
           arch: ${{ inputs.arch }}
           release: ${{ inputs.release }}
-      - uses: fawazahmed0/action-debug@main
+      - uses: fawazahmed0/action-debug-vscode@v3
