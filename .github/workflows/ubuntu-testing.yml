@@ -10,4 +10,4 @@ jobs:
   test:
     runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     steps:
-      - uses: fawazahmed0/action-debug@main
+      - uses: fawazahmed0/action-debug-vscode@v3

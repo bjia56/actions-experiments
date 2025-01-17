@@ -1,9 +1,14 @@
 name: Test on Ubuntu with compilers
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     
     steps:
       - name: Set up zig
@@ -14,4 +19,4 @@ jobs:
         uses: bjia56/setup-cosmocc@v0.0.3
         with:
           version: 3.9.7
-      - uses: fawazahmed0/action-debug@main
+      - uses: fawazahmed0/action-debug-vscode@v3

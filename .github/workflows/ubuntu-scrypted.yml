@@ -1,9 +1,14 @@
 name: Test Scrypted on Ubuntu
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     
     steps:
       - name: Install scrypted server

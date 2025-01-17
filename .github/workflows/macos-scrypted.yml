@@ -1,9 +1,13 @@
 name: Test Scrypted on MacOS
 on:
   workflow_dispatch:
+      arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
-    runs-on: macos-13
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-13' || 'macos-14' }}
     
     steps:
       - name: Install scrypted server

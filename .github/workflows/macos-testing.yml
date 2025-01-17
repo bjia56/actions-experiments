@@ -1,8 +1,13 @@
 name: Test on MacOS
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
-    runs-on: macos-13
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-13' || 'macos-14' }}
     steps:
-      - uses: fawazahmed0/action-debug@main
+      - uses: fawazahmed0/action-debug-vscode@v3

@@ -1,8 +1,0 @@
-name: Test on MacOS arm64
-on:
-  workflow_dispatch:
-jobs:
-  test:
-    runs-on: macos-14
-    steps:
-      - uses: fawazahmed0/action-debug@main

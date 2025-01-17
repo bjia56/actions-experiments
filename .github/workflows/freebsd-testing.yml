@@ -12,7 +12,7 @@ on:
         default: 15.0
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     steps:
       - name: Start VM
         id: vm

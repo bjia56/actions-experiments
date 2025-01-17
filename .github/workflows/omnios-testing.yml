@@ -9,5 +9,5 @@ jobs:
         id: vm
         uses: vmactions/omnios-vm@v1
         with:
-          sync: sshfs
-      - uses: fawazahmed0/action-debug@main
+          sync: nfs
+      - uses: fawazahmed0/action-debug-vscode@v3
