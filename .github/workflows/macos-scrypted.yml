@@ -1,6 +1,7 @@
 name: Test Scrypted on MacOS
 on:
   workflow_dispatch:
+    inputs:
       arch:
         required: true
         type: string
