@@ -19,6 +19,7 @@ jobs:
           TOOLS_DIR="$SDK_DIR/cmdline-tools"
           TOOLS_BIN="$TOOLS_DIR/latest/bin"
           EMULATORS_BIN="$SDK_DIR/emulator"
+          PLATFORM_TOOLS_BIN="$SDK_DIR/platform-tools"
           AVD_NAME="test_emulator"
 
           # Step 1: Download Android command line tools
@@ -32,14 +33,10 @@ jobs:
           mv "$TOOLS_DIR/cmdline-tools" "$TOOLS_DIR/latest"
           rm "$SDK_DIR/cmdline-tools.zip"
 
-          # Step 3: Add tools to PATH
-          export PATH="$TOOLS_BIN:$EMULATORS_BIN:$PATH"
+          # Step 3: Setup environment variables
+          export PATH="$TOOLS_BIN:$EMULATORS_BIN:$PLATFORM_TOOLS_BIN:$PATH"
           export ANDROID_HOME=~/Android/Sdk/
           export ANDROID_AVD_HOME=~/.android/avd/
-          echo "export PATH=\"$TOOLS_BIN:$EMULATORS_BIN:\$PATH\"" >> ~/.bashrc
-          echo 'export ANDROID_HOME=~/Android/Sdk/' >> ~/.bashrc
-          echo 'export ANDROID_AVD_HOME=~/.android/avd/' >> ~/.bashrc
-          source ~/.bashrc
 
           # Step 4: Accept licenses and install required packages
           mkdir -p "$SDK_DIR/licenses"
@@ -62,6 +59,7 @@ jobs:
           # Add binaries to GITHUB_PATH
           echo $TOOLS_DIR >> $GITHUB_PATH
           echo $EMULATORS_BIN >> $GITHUB_PATH
+          echo $PLATFORM_TOOLS_BIN >> $GITHUB_PATH
 
           # Add to GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
