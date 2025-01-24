@@ -15,9 +15,59 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Start emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: date
+        run: |
+          # Define variables
+          SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          SDK_DIR="$HOME/Android/Sdk"
+          TOOLS_DIR="$SDK_DIR/cmdline-tools"
+          TOOLS_BIN="$TOOLS_DIR/latest/bin"
+          EMULATORS_BIN="$SDK_DIR/emulator"
+          AVD_NAME="test_emulator"
+
+          # Step 1: Download Android command line tools
+          mkdir -p "$SDK_DIR"
+          echo "Downloading Android command line tools..."
+          curl -o "$SDK_DIR/cmdline-tools.zip" -L "$SDK_URL"
+
+          # Step 2: Unzip the command line tools
+          mkdir -p "$TOOLS_DIR"
+          unzip -qo "$SDK_DIR/cmdline-tools.zip" -d "$TOOLS_DIR"
+          mv "$TOOLS_DIR/cmdline-tools" "$TOOLS_DIR/latest"
+          rm "$SDK_DIR/cmdline-tools.zip"
+
+          # Step 3: Add tools to PATH
+          export PATH="$TOOLS_BIN:$EMULATORS_BIN:$PATH"
+          export ANDROID_HOME=~/Android/Sdk/
+          export ANDROID_AVD_HOME=~/.android/avd/
+          echo "export PATH=\"$TOOLS_BIN:$EMULATORS_BIN:\$PATH\"" >> ~/.bashrc
+          echo 'export ANDROID_HOME=~/Android/Sdk/' >> ~/.bashrc
+          echo 'export ANDROID_AVD_HOME=~/.android/avd/' >> ~/.bashrc
+          source ~/.bashrc
+
+          # Step 4: Accept licenses and install required packages
+          mkdir -p "$SDK_DIR/licenses"
+          echo "Installing SDK packages..."
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-29" "system-images;android-29;google_apis;x86_64" "emulator"
+
+          # Step 5: Create and start an emulator
+          echo "Creating Android Virtual Device (AVD)..."
+          mkdir -p "$ANDROID_AVD_HOME"
+          avdmanager create avd --name "$AVD_NAME" --package "system-images;android-29;google_apis;x86_64" --device "pixel" --abi google_apis/x86_64 --force
+
+          # Step 6: Launch the emulator
+          echo "Launching emulator..."
+          emulator -avd "$AVD_NAME" -no-snapshot -no-window -noaudio -no-boot-anim -accel on -memory 4096 -netdelay none -netspeed full &
+
+          # Print success message
+          echo "Android SDK setup complete. Emulator is running."
+
+          # Add binaries to GITHUB_PATH
+          echo $TOOLS_DIR >> $GITHUB_PATH
+          echo $EMULATORS_BIN >> $GITHUB_PATH
+
+          # Add to GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> $GITHUB_ENV
 
       - uses: fawazahmed0/action-debug-vscode@v3
