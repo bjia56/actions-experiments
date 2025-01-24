@@ -15,9 +15,9 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Start emulator
-        uses: bjia56/android-emulator-runner@release/v2
+        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          script: true
+          script: date
 
       - uses: fawazahmed0/action-debug-vscode@v3
