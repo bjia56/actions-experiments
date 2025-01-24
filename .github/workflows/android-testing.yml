@@ -14,8 +14,6 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: 
-
       - name: Start emulator
         uses: bjia56/android-emulator-runner@main
         with:
