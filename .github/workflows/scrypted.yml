@@ -31,6 +31,9 @@ jobs:
         run: |
           brew install tailscale coreutils
 
+          sudo -E tailscaled --state=mem: 2>~/tailscaled.log &
+          sudo -E tailscale status --json >/dev/null
+
           TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
           TAGS_ARG="--advertise-tags=tag:ci"
           HOSTNAME="github-$(hostname)"
