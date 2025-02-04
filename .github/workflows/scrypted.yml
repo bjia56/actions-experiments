@@ -76,8 +76,7 @@ jobs:
           fi
 
       - name: Install scrypted server
-        #uses: scryptedapp/setup-scrypted@v0.0.2
-        uses: scryptedapp/setup-scrypted@main
+        uses: scryptedapp/setup-scrypted@v0.0.3
         with:
           version: ${{ inputs.scrypted_version }}
           healthcheck: ${{ !inputs.server_address }}
