@@ -1,0 +1,50 @@
+name: Test Scrypted
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        required: true
+        type: string
+        default: ubuntu-24.04
+      scrypted_version:
+        required: true
+        type: string
+        default: latest
+      server_address:
+        required: false
+        type: string
+jobs:
+  test:
+    runs-on: ${{ inputs.runner }}
+    
+    steps:
+      - name: Set cluster envs
+        shell: bash
+        run: |
+          if [[ "${{ inputs.server_address }}" == "" ]]; then
+            # Server mode
+            echo "SCRYPTED_CLUSTER_MODE=server" >> "$GITHUB_ENV"
+            echo "SCRYPTED_CLUSTER_ADDRESS=0.0.0.0" >> "$GITHUB_ENV"
+            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> "$GITHUB_ENV"
+          else
+            # Client mode
+            echo "SCRYPTED_CLUSTER_MODE=client" >> "$GITHUB_ENV"
+            echo "SCRYPTED_CLUSTER_SERVER=${{ inputs.server_address }}" >> "$GITHUB_ENV"
+            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install scrypted server
+        uses: scryptedapp/setup-scrypted@v0.0.2
+        with:
+          version: ${{ inputs.scrypted_version }}
+
+      - name: Run establish a cf tunnel
+        uses: vmactions/cf-tunnel@main
+        with:
+          protocol: http
+          port: 11080
+
+      - name: Wait to exit
+        shell: bash
+        run: |
+          while [ ! -f ./continue ]; do sleep 5; done
