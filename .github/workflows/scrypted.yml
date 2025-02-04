@@ -56,7 +56,7 @@ jobs:
           hostname > .tmphostname
           set /p HOSTNAME= < .tmphostname
 
-          tailscale up %TARGS_ARG% --authkey=%TAILSCALE_AUTHKEY --hostname=%HOSTNAME% --accept-routes
+          tailscale up %TARGS_ARG% --authkey=%TAILSCALE_AUTHKEY% --hostname=%HOSTNAME% --accept-routes
 
       - name: Set cluster envs
         shell: bash
@@ -80,7 +80,7 @@ jobs:
         uses: scryptedapp/setup-scrypted@main
         with:
           version: ${{ inputs.scrypted_version }}
-          healthcheck: ${{ inputs.server_address == '' }}
+          healthcheck: ${{ !inputs.server_address }}
 
       - name: Run establish a cf tunnel
         uses: vmactions/cf-tunnel@main
