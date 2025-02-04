@@ -44,6 +44,12 @@ jobs:
           protocol: http
           port: 11080
 
+      - name: Run establish a cf tunnel
+        uses: vmactions/cf-tunnel@main
+        with:
+          protocol: tcp
+          port: 10556
+
       - name: Wait to exit
         shell: bash
         run: |
