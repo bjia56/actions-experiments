@@ -39,7 +39,7 @@ jobs:
           HOSTNAME="github-$(hostname)"
           timeout 5m sudo -E tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes
 
-          networksetup -setdnsservers "Ethernet" 100.100.100.100
+          networksetup -setdnsservers "Ethernet" 100.100.100.100 8.8.8.8
 
       - name: Tailscale Windows
         if: ${{ runner.os == 'Windows' }}
