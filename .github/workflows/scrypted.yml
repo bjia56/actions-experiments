@@ -39,6 +39,7 @@ jobs:
             echo "SCRYPTED_CLUSTER_MODE=client" >> ~/.scrypted/volume/.env
             echo "SCRYPTED_CLUSTER_SERVER=${{ inputs.server_address }}" >> ~/.scrypted/volume/.env
             echo "SCRYPTED_CLUSTER_SECRET=swordfish123" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_WORKER_NAME=$(hostname)" >> ~/.scrypted/volume/.env
           fi
 
       - name: Install scrypted server
