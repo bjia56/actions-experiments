@@ -45,11 +45,14 @@ jobs:
           protocol: http
           port: 11080
 
-      - name: Run establish a cf tunnel
-        uses: vmactions/cf-tunnel@main
+      - uses: codetalkio/expose-tunnel@v1.5.0
+        id: expose-tunnel
         with:
-          protocol: tcp
+          service: bore.pub
           port: 10556
+
+      - name: Accessing the tunnel url
+        run: echo "Tunnel has been started at '${{ steps.expose-tunnel.outputs.tunnel-url }}'"
 
       - name: Wait to exit
         shell: bash
