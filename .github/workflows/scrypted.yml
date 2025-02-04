@@ -18,12 +18,23 @@ jobs:
     runs-on: ${{ inputs.runner }}
     
     steps:
-      - name: Tailscale
+      - name: Tailscale Linux
+        if: ${{ runner.os == 'Linux' }}
         uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
+
+      - name: Tailscale MacOS
+        if: ${{ runner.os == 'MacOS' }}
+        run: |
+          brew install tailscale coreutils
+
+          TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
+          TAGS_ARG="--advertise-tags=tag:ci"
+          HOSTNAME="github-$(hostname)"
+          timeout 5m sudo -E tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes
 
       - name: Set cluster envs
         shell: bash
