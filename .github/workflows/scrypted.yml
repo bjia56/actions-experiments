@@ -56,7 +56,7 @@ jobs:
           hostname > .tmphostname
           set /p HOSTNAME= < .tmphostname
 
-          tailscale up %TAGS_ARG% --authkey=%TAILSCALE_AUTHKEY% --hostname=%HOSTNAME% --accept-routes
+          tailscale up %TAGS_ARG% --authkey=%TAILSCALE_AUTHKEY% --hostname=github-%HOSTNAME% --accept-routes
 
       - name: Set cluster envs
         shell: bash
