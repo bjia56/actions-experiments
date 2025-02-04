@@ -44,15 +44,19 @@ jobs:
         shell: bash
         run: |
           choco install tailscale
+      
+      - name: Tailscale Windows
+        if: ${{ runner.os == 'Windows' }}
+        shell: cmd
+        run: |
+          call refreshenv
 
-          tailscaled --state=mem: 2>~/tailscaled.log &
-          tailscale status --json >/dev/null
+          set TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
+          set TAGS_ARG="--advertise-tags=tag:ci"
+          hostname > .tmphostname
+          set /p HOSTNAME= < .tmphostname
 
-          TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-          TAGS_ARG="--advertise-tags=tag:ci"
-          HOSTNAME="github-$(hostname)"
-
-          tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes
+          tailscale up %TARGS_ARG% --authkey=%TAILSCALE_AUTHKEY --hostname=%HOSTNAME% --accept-routes
 
       - name: Set cluster envs
         shell: bash
