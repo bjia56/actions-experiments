@@ -76,10 +76,10 @@ jobs:
           fi
 
       - name: Install scrypted server
-        uses: scryptedapp/setup-scrypted@v0.0.3
+        uses: scryptedapp/setup-scrypted@main
         with:
           version: ${{ inputs.scrypted_version }}
-          healthcheck: ${{ !inputs.server_address }}
+          skip_healthcheck: ${{ !!inputs.server_address }}
 
       - name: Run establish a cf tunnel
         uses: vmactions/cf-tunnel@main
