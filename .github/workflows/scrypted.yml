@@ -86,6 +86,11 @@ jobs:
       - uses: fawazahmed0/action-debug-vscode@v3
         if: ${{ inputs.server_address != '' }}
 
+      - name: Print Tailscale endpoint
+        if: ${{ inputs.server_address == '' }}
+        run: |
+          tailscale status
+
       - name: Run establish a cf tunnel
         uses: vmactions/cf-tunnel@main
         if: ${{ inputs.server_address == '' }}
