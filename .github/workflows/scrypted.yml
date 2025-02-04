@@ -18,6 +18,13 @@ jobs:
     runs-on: ${{ inputs.runner }}
     
     steps:
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
       - name: Set cluster envs
         shell: bash
         run: |
@@ -26,12 +33,12 @@ jobs:
             # Server mode
             echo "SCRYPTED_CLUSTER_MODE=server" >> ~/.scrypted/volume/.env
             echo "SCRYPTED_CLUSTER_ADDRESS=0.0.0.0" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_SECRET=swordfish123" >> ~/.scrypted/volume/.env
           else
             # Client mode
             echo "SCRYPTED_CLUSTER_MODE=client" >> ~/.scrypted/volume/.env
             echo "SCRYPTED_CLUSTER_SERVER=${{ inputs.server_address }}" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_SECRET=swordfish123" >> ~/.scrypted/volume/.env
           fi
 
       - name: Install scrypted server
@@ -44,15 +51,6 @@ jobs:
         with:
           protocol: http
           port: 11080
-
-      - uses: codetalkio/expose-tunnel@v1.5.0
-        id: expose-tunnel
-        with:
-          service: bore.pub
-          port: 10556
-
-      - name: Accessing the tunnel url
-        run: echo "Tunnel has been started at '${{ steps.expose-tunnel.outputs.tunnel-url }}'"
 
       - name: Wait to exit
         shell: bash
