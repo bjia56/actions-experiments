@@ -83,13 +83,18 @@ jobs:
           version: ${{ inputs.scrypted_version }}
           healthcheck: ${{ inputs.server_address == '' }}
 
+      - uses: fawazahmed0/action-debug-vscode@v3
+        if: ${{ inputs.server_address != '' }}
+
       - name: Run establish a cf tunnel
         uses: vmactions/cf-tunnel@main
+        if: ${{ inputs.server_address == '' }}
         with:
           protocol: http
           port: 11080
 
       - name: Wait to exit
+        if: ${{ inputs.server_address == '' }}
         shell: bash
         run: |
           while [ ! -f ./continue ]; do sleep 5; done
