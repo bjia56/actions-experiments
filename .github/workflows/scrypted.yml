@@ -21,16 +21,17 @@ jobs:
       - name: Set cluster envs
         shell: bash
         run: |
+          mkdir -p ~/.scrypted/volume
           if [[ "${{ inputs.server_address }}" == "" ]]; then
             # Server mode
-            echo "SCRYPTED_CLUSTER_MODE=server" >> "$GITHUB_ENV"
-            echo "SCRYPTED_CLUSTER_ADDRESS=0.0.0.0" >> "$GITHUB_ENV"
-            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> "$GITHUB_ENV"
+            echo "SCRYPTED_CLUSTER_MODE=server" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_ADDRESS=0.0.0.0" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> ~/.scrypted/volume/.env
           else
             # Client mode
-            echo "SCRYPTED_CLUSTER_MODE=client" >> "$GITHUB_ENV"
-            echo "SCRYPTED_CLUSTER_SERVER=${{ inputs.server_address }}" >> "$GITHUB_ENV"
-            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> "$GITHUB_ENV"
+            echo "SCRYPTED_CLUSTER_MODE=client" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_SERVER=${{ inputs.server_address }}" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_SECRET=swordfish" >> ~/.scrypted/volume/.env
           fi
 
       - name: Install scrypted server
