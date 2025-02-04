@@ -83,7 +83,7 @@ jobs:
           version: ${{ inputs.scrypted_version }}
           healthcheck: ${{ inputs.server_address == '' }}
 
-      - uses: fawazahmed0/action-debug-vscode@v3
+      - uses: fawazahmed0/action-debug@main
         if: ${{ inputs.server_address != '' }}
 
       - name: Print Tailscale endpoint
