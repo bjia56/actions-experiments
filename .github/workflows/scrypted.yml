@@ -39,6 +39,8 @@ jobs:
           HOSTNAME="github-$(hostname)"
           timeout 5m sudo -E tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes
 
+          # Even with this, it seems that the MagicDNS FQDNs don't resolve,
+          # so Mac workers should connect with the server's direct Tailscale IP
           networksetup -setdnsservers "Ethernet" 100.100.100.100 8.8.8.8
 
       - name: Tailscale Windows
