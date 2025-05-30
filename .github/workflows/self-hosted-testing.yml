@@ -1,0 +1,8 @@
+name: Test on Self-Hosted
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - uses: fawazahmed0/action-debug-vscode@v3
