@@ -19,6 +19,5 @@ jobs:
           add-to-path: false
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: UCRT64
           update: true
       - uses: fawazahmed0/action-debug-vscode@v3
