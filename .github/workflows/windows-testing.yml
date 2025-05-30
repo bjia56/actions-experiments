@@ -14,4 +14,8 @@ jobs:
           curl -L -o zip https://cosmo.zip/pub/cosmos/bin/zip
           curl -L -o unzip https://cosmo.zip/pub/cosmos/bin/unzip
       - uses: microsoft/setup-msbuild@v2
+      - uses: cygwin/cygwin-install-action@v5
+        with:
+          add-to-path: false
+      - uses: msys2/setup-msys2@v2
       - uses: fawazahmed0/action-debug-vscode@v3
