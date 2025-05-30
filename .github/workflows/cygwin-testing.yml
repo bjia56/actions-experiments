@@ -6,4 +6,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: cygwin/cygwin-install-action@v5
+        with:
+          add-to-path: false
       - uses: fawazahmed0/action-debug-vscode@v3
