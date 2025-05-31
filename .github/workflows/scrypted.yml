@@ -89,8 +89,15 @@ jobs:
         if: ${{ inputs.server_address != '' }}
 
       - name: Print Tailscale endpoint
-        if: ${{ inputs.server_address == '' }}
+        if: ${{ inputs.server_address == '' && runner.os != 'Windows' }}
         run: |
+          tailscale status
+
+      - name: Print Tailscale endpoint
+        if: ${{ inputs.server_address == '' && runner.os == 'Windows' }}
+        shell: cmd
+        run: |
+          call refreshenv
           tailscale status
 
       - name: Run establish a cf tunnel
