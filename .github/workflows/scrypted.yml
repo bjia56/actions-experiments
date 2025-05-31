@@ -13,6 +13,9 @@ on:
       server_address:
         required: false
         type: string
+      debug:
+        required: false
+        type: boolean
 jobs:
   test:
     runs-on: ${{ inputs.runner }}
@@ -86,7 +89,7 @@ jobs:
           healthcheck: ${{ inputs.server_address == '' }}
 
       - uses: fawazahmed0/action-debug@main
-        if: ${{ inputs.server_address != '' }}
+        if: ${{ inputs.server_address != '' || inputs.debug }}
 
       - name: Print Tailscale endpoint
         if: ${{ inputs.server_address == '' && runner.os != 'Windows' }}
