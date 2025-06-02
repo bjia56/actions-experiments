@@ -6,6 +6,10 @@ on:
         required: true
         type: string
         default: x86_64
+      cygwin_arch:
+        required: true
+        type: string
+        default: x86_64
 jobs:
   test:
     runs-on: ${{ inputs.arch == 'x86_64' && 'windows-latest' || 'windows-11-arm' }}
@@ -25,6 +29,7 @@ jobs:
         if: ${{ inputs.arch == 'x86_64' }}
         with:
           add-to-path: false
+          platform: ${{ inputs.cygwin_arch }}
       - uses: msys2/setup-msys2@v2
         if: ${{ inputs.arch == 'x86_64' }}
         with:
