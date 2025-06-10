@@ -10,4 +10,6 @@ jobs:
         uses: vmactions/solaris-vm@v1
         with:
           sync: nfs
+          prepare: |
+            pkg install --accept cmake gcc git
       - uses: fawazahmed0/action-debug-vscode@v3
