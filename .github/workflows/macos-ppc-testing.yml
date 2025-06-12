@@ -76,13 +76,12 @@ jobs:
               echo "Waiting for SSH to become available on $HOST..."
 
               while true; do
-                  ssh -o ConnectTimeout=5 "root@$HOST" date
-                  if [ $? -eq 0 ]; then
-                      echo "SSH is now available on $HOST."
-                      return 0
-                  else
+                  if ! ssh -o ConnectTimeout=5 "root@$HOST" date ; then
                       echo "SSH not available yet. Retrying in $INTERVAL seconds..."
                       sleep $INTERVAL
+                  else
+                      echo "SSH is now available on $HOST."
+                      return 0
                   fi
               done
           }
