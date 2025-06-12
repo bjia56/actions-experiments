@@ -11,6 +11,8 @@ jobs:
 
           qemu-img create -f qcow2 -b /images/tiger.qcow2 -F qcow2 disk.qcow2
 
+          export XDG_RUNTIME_DIR=$(mktemp -d)
+
           xvfb-run qemu-system-ppc -L pc-bios -M mac99,via=pmu -cpu G4 -m 1024 -prom-env 'auto-boot?=true' -prom-env 'boot-args=-v' -prom-env 'vga-ndrv?=true' -hda disk.qcow2 -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -boot c -no-reboot &
 
           mkdir -p ~/.ssh
