@@ -76,7 +76,7 @@ jobs:
               echo "Waiting for SSH to become available on $HOST..."
 
               while true; do
-                  ssh -o BatchMode=yes -o ConnectTimeout=5 "root@$HOST" exit &>/dev/null
+                  ssh -o ConnectTimeout=5 "root@$HOST" date
                   if [ $? -eq 0 ]; then
                       echo "SSH is now available on $HOST."
                       return 0
