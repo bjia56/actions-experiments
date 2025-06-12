@@ -1,0 +1,90 @@
+name: Test on MacOS PPC
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - run: |
+          sudo apt update
+          sudo apt -y install qemu-system-ppc xvfb ssh
+
+          qemu-img create -f qcow2 -b /images/tiger.qcow2 -F qcow2 disk.qcow2
+
+          xvfb-run qemu-system-ppc -L pc-bios -M mac99,via=pmu -cpu G4 -m 1024 -prom-env 'auto-boot?=true' -prom-env 'boot-args=-v' -prom-env 'vga-ndrv?=true' -hda disk.qcow2 -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -boot c -no-reboot &
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          cat > ~/.ssh/config <<EOL
+          Host macppc
+              User macuser
+              HostName localhost
+              Port 5555
+              KexAlgorithms diffie-hellman-group-exchange-sha1,diffie-hellman-group1-sha1
+              HostKeyAlgorithms ssh-rsa,ssh-dss
+              PubkeyAcceptedKeyTypes ssh-rsa
+              IdentityFile ~/.ssh/id_rsa.macppc
+              StrictHostKeyChecking no
+              UserKnownHostsFile=/dev/null
+          EOL
+          chmod 600 ~/.ssh/config
+
+          echo | base64 -d > ~/.ssh/id_rsa.macppc <<EOL
+          LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb1FJQkFBS0NBUUVBdC93MXQ5bGNP
+          YWJKb0Q4RSsvYjRqUGdrY2ZVY1pCL0J0UHFEWnlTSmh0SGJIalZkCkhrYVlqMjBrejVXM0UzdVpn
+          VnpxdFR3T2JDTURTbHhzUVFxckJxaG5PWXBVREpkV095RXk2SHIrSDVMTHNvaGsKbkZVb1FsUWZp
+          TWtmZjc2RldFUDVIbGZiSXBCUWhIWVpNT3lhd1Y1a2NPVEI4OTF0c3RodjdFZys3WmlwbmliYQpw
+          N0Z4UWFvRTRrcGJ2SHdCckNlZlM1QmRaNGNkUFZUUTZzUVNucmZ2MEhYYUQvMTJPYnNVMFpBK1VW
+          MytCNk95CmFUczFsWFRyU0tqeUJUb2JSbkxOMjVVRUZqaGl1S1BnSHBNV2pDbVByVDAxKzArWUda
+          WVZwcncrdDNOTStYR0IKK29vZ1RaY2FsMHFyRS9WTmwwUktkVHpSMEVaaXpZR0NFbFM1c3dJQkl3
+          S0NBUUJ6cGRpZmNxNy9xcXFmUFk0YQp1SDc1aGdoSG9XSk5rRTNmZU9UaHZ6SGZ0eHdFWEE2bFVQ
+          SXVSSnJMbis5clZRRm5RYmdhSmIvc00wUGxtUzRhClFUaE5VK2tjMnBzN0hVd2xLcytLMFBlQmoz
+          aTVYUXdLZnF1WGFCUFNVb2pUOUJsTmJJMzEwTkxpaHBrQ3plUHkKM2QyZUhoTS9wYnU5MjZRS0JH
+          T2IxYVBsekpwMDFOc0c5VDE0M3YydDJ6Q2VEMmo5MzFIQWVkRm9oWDVpR0FNZQprbHdac1pnUHFG
+          YUxGcUdBd0tBN3RUSFZrd0ZRUFcvTFQvNEtNSERXSFR2NDc4YXJHV3J4Tm1jY0xyb3ZNMElVCmly
+          NnQrVGYvMlZEN3lReHhYTWxRbnduZk5nSXNWaFpNNjFVQm5zODMvczJqSFJsMkFBQXROVjRtT0tF
+          bXdtOG4KMG92YkFvR0JBTzN6WE5lSGhTVDVJL0JwUS94MDhXN3RIMUpXYi9uTXI5MEFSa3hGZkVh
+          MytiOGVLRE9QbUNjQQpTL3UzWCsyQjVXNmZXR3czMkVOTExNSnlybUNTTDQ0K1FnMnQyMVZzUndP
+          MDcrZURJQjNXNncvamYxNko0cmdzCjNOZG01bUxMcTdtK2dGcFZiSlNBZjBQdDE2OVdEV0ROQTcz
+          NkVXTnBQRjIzZWR0dTNGNy9Bb0dCQU1YdzY3M3kKTWNlVDNZRGtiM3FwTEQwckpRVVVYcFowam9M
+          UGl6bmRYdk9QVWpNbEI2aDBrc0tteUVpN012WGthOGQvNllpeiAgICAgICAgICAgICAgICAgICAg
+          ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+          ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+          ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+          ICAgICAgICAgICAgICAgICAgICAgICAgIHdNYmMreGc3aGoyczB1Zzl6aUd0K21lM1NmRCtiZzk2
+          eE1sYXBtRGhRVE95VCs4SjFDeUZaSHJDMm1FNk9hY1QKZUp2V0p0TFFYWjFScmY1M1FJd3pQMEZZ
+          eHpOQkdDUllldGxOQW9HQWM1TjJQTXpMcEQ1L0s2RFg0UVdaMXNyeAo5TXJsN2x3YTU2K3RIYnRa
+          bnJFaGlMYmdVNDdqZ0toZmE2STE2R09wOCtiL0QvM2VFZzZTRlUybEo1ZDJMeVdOCnpDRStwZFdC
+          bEJZT0gvM2Naa1BSUWp0TWZtQTY2NzRFM2FjQ0wveUduQXdTZFFUcm1KWXZMNTlvd3VDbmFZZ20K
+          WTVhMy9SWGJmZm9IL040VFJCVUNnWUF5NWkzOXBLMjIraU1ENHZnWU9pRlJqc0JnWkZMV096cVdx
+          bVdoS2t1ZAp0eVBFQWpVclVTME5lMWdTczh0R2l6R29WQmQ2N0dURmJBWU5pNll0SGMvVlViaXBr
+          eU1oKys1eEszdGpFUERHCkQvN2x0a1AzV2J6SWNEM2ZrQVBsRFlpY3FKSjdhMmdvRW44REFtRTNG
+          UURiQ0xqVG1DWTFYL2kxYUlLTkFNOGgKN3dLQmdRQ2x5TFNWTTdnSXJRWFloM0IzWjB1UTltN1lI
+          WTdPcjlFQ0FmTlNEZUdvWXgxVzFzdS9lWnp3dFI2KwpoYmtZMUpBa2l2aVU4RDJ2SnlPN2lxSmt4
+          YURRSTBDL0MrM1V1M2JaekJVeGMzS0ZTSWwzb2dlZElvSFUzNTFOCnA2L1R6MEt5ZlZxcGFudDl4
+          RXR1aTFQeWZtS0g1TjBJdCtaS2J4L3pJbFZMQXNOY1dnPT0KLS0tLS1FTkQgUlNBIFBSSVZBVEUg
+          S0VZLS0tLS0K
+          EOL
+          chmod 400 ~/.ssh/id_rsa.macppc
+
+          wait_for_ssh() {
+              local HOST="macppc"
+              local INTERVAL=10
+
+              echo "Waiting for SSH to become available on $HOST..."
+
+              while true; do
+                  ssh -o BatchMode=yes -o ConnectTimeout=5 "root@$HOST" exit &>/dev/null
+                  if [ $? -eq 0 ]; then
+                      echo "SSH is now available on $HOST."
+                      return 0
+                  else
+                      echo "SSH not available yet. Retrying in $INTERVAL seconds..."
+                      sleep $INTERVAL
+                  fi
+              done
+          }
+
+          wait_for_ssh
+
+      - uses: fawazahmed0/action-debug-vscode@v3
