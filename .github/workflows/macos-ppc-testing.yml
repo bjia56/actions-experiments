@@ -85,6 +85,6 @@ jobs:
               done
           }
 
-          wait_for_ssh
+          (set +o pipefail; wait_for_ssh)
 
       - uses: fawazahmed0/action-debug-vscode@v3
