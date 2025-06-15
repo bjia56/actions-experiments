@@ -4,6 +4,7 @@ on:
 jobs:
   test:
     runs-on: self-hosted
+    timeout-minutes: 7200
     steps:
       - uses: bjia56/custom-actions/macppc-vm@main
 
