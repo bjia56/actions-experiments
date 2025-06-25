@@ -8,4 +8,5 @@ jobs:
       - uses: cross-platform-actions/action@v0.28.0
         with:
           operating_system: haiku
+          version: r1beta5
       - uses: fawazahmed0/action-debug-vscode@v3
