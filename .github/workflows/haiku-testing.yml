@@ -9,4 +9,5 @@ jobs:
         with:
           operating_system: haiku
           version: r1beta5
+          shutdown_vm: false
       - uses: fawazahmed0/action-debug-vscode@v3
