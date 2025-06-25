@@ -1,0 +1,11 @@
+name: Test on Haiku
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: cross-platform-actions/action@v0.28.0
+        with:
+          operating_system: haiku
+      - uses: fawazahmed0/action-debug-vscode@v3
