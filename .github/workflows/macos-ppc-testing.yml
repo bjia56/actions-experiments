@@ -3,9 +3,12 @@ on:
   workflow_dispatch:
 jobs:
   test:
-    runs-on: self-hosted
-    timeout-minutes: 7200
+    runs-on: ubuntu-latest
     steps:
-      - uses: bjia56/custom-actions/macppc-vm@main
+      - uses: bjia56/macppc-vm@main
+        with:
+          vm_image: ${{ secrets.VM_IMAGE }}
+          vm_image_sha256: ${{ secrets.VM_IMAGE_SHA256 }}
+          ssh_key: ${{ secrets.VM_KEY }}
 
       - uses: fawazahmed0/action-debug-vscode@v3
