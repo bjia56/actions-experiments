@@ -10,4 +10,8 @@ jobs:
         uses: vmactions/dragonflybsd-vm@v1
         with:
           sync: nfs
+      - name: Setup VS Code dark mode settings
+        run: |
+          mkdir -p ~/.vscode-server/data/Machine
+          echo '{"workbench.colorTheme": "Default Dark Modern"}' > ~/.vscode-server/data/Machine/settings.json
       - uses: fawazahmed0/action-debug-vscode@v3

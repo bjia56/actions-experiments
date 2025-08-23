@@ -10,4 +10,8 @@ jobs:
   test:
     runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     steps:
+      - name: Setup VS Code dark mode settings
+        run: |
+          mkdir -p ~/.vscode-server/data/Machine
+          echo '{"workbench.colorTheme": "Default Dark Modern"}' > ~/.vscode-server/data/Machine/settings.json
       - uses: fawazahmed0/action-debug-vscode@v3

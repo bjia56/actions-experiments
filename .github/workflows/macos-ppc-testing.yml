@@ -18,4 +18,8 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3_endpoint_url: ${{ secrets.S3_ENDPOINT }}
 
+      - name: Setup VS Code dark mode settings
+        run: |
+          mkdir -p ~/.vscode-server/data/Machine
+          echo '{"workbench.colorTheme": "Default Dark Modern"}' > ~/.vscode-server/data/Machine/settings.json
       - uses: fawazahmed0/action-debug-vscode@v3

@@ -12,4 +12,8 @@ jobs:
           shutdown_vm: false
           run: |
             uname -a
+      - name: Setup VS Code dark mode settings
+        run: |
+          mkdir -p ~/.vscode-server/data/Machine
+          echo '{"workbench.colorTheme": "Default Dark Modern"}' > ~/.vscode-server/data/Machine/settings.json
       - uses: fawazahmed0/action-debug-vscode@v3

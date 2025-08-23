@@ -34,4 +34,9 @@ jobs:
         if: ${{ inputs.arch == 'x86_64' }}
         with:
           install: make mingw-w64-x86_64-gcc git
+      - name: Setup VS Code dark mode settings
+        shell: bash
+        run: |
+          mkdir -p ~/.vscode-server/data/Machine
+          echo '{"workbench.colorTheme": "Default Dark Modern"}' > ~/.vscode-server/data/Machine/settings.json
       - uses: fawazahmed0/action-debug-vscode@v3
