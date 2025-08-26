@@ -9,6 +9,12 @@ jobs:
         with:
           ibmcloud_api_key: ${{ secrets.IBMCLOUD_API_KEY }}
           prefix: 'experiments-${{ github.run_number }}'
+      - shell: powervs {0}
+        run: |
+          export PATH=/opt/freeware/bin:$PATH
+          chfs -a size=+1G /var
+          chfs -a size=+2G /opt
+          dnf install -y git gcc gcc-c++
       - name: Setup VS Code dark mode settings
         run: |
           mkdir -p ~/.vscode-server/data/Machine
