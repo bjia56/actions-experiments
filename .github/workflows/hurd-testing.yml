@@ -1,0 +1,13 @@
+name: Test on GNU/Hurd
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bjia56/hurd-vm@main
+      - name: Setup VS Code dark mode settings
+        run: |
+          mkdir -p ~/.vscode-server/data/Machine
+          echo '{"workbench.colorTheme": "Default Dark Modern"}' > ~/.vscode-server/data/Machine/settings.json
+      - uses: fawazahmed0/action-debug-vscode@v3
