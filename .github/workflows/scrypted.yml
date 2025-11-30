@@ -71,8 +71,9 @@ jobs:
           mkdir -p ~/.scrypted/volume
           if [[ "${{ inputs.server_address }}" == "" ]]; then
             # Server mode
+            TAILSCALE_IP=$(tailscale ip -4)
             echo "SCRYPTED_CLUSTER_MODE=server" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_ADDRESS=0.0.0.0" >> ~/.scrypted/volume/.env
+            echo "SCRYPTED_CLUSTER_ADDRESS=${TAILSCALE_IP}" >> ~/.scrypted/volume/.env
             echo "SCRYPTED_CLUSTER_SECRET=swordfish123" >> ~/.scrypted/volume/.env
           else
             # Client mode
