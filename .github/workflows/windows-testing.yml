@@ -25,7 +25,7 @@ jobs:
           curl -L -o unzip https://cosmo.zip/pub/cosmos/bin/unzip
       - uses: microsoft/setup-msbuild@v2
         if: ${{ inputs.arch == 'x86_64' }}
-      - uses: cygwin/cygwin-install-action@v5
+      - uses: cygwin/cygwin-install-action@v6
         if: ${{ inputs.arch == 'x86_64' }}
         with:
           add-to-path: false
