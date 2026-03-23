@@ -19,7 +19,7 @@ on:
 jobs:
   test:
     runs-on: ${{ inputs.runner }}
-    
+
     steps:
       - name: Tailscale Linux
         if: ${{ runner.os == 'Linux' }}
@@ -51,12 +51,13 @@ jobs:
         shell: bash
         run: |
           choco install tailscale
-      
+
       - name: Tailscale Windows
         if: ${{ runner.os == 'Windows' }}
         shell: cmd
         run: |
           call refreshenv
+          echo C:\Program Files\Tailscale>>%GITHUB_PATH%
 
           set TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
           set TAGS_ARG="--advertise-tags=tag:ci"
