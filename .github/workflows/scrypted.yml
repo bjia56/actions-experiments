@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Tailscale Linux
         if: ${{ runner.os == 'Linux' }}
-        uses: tailscale/github-action@v3
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
@@ -85,12 +85,12 @@ jobs:
           fi
 
       - name: Install scrypted server
-        uses: scryptedapp/setup-scrypted@v0.0.4
+        uses: scryptedapp/setup-scrypted@610bd31c99dd4f1ddc2ce1a43ef1bfdfcdae50cd
         with:
           version: ${{ inputs.scrypted_version }}
           healthcheck: ${{ inputs.server_address == '' }}
 
-      - uses: fawazahmed0/action-debug@main
+      - uses: fawazahmed0/action-debug@f439db40bf13513aaf8dac80e61670a97042eb4a
         if: ${{ inputs.server_address != '' || inputs.debug }}
 
       - name: Print Tailscale endpoint
@@ -106,7 +106,7 @@ jobs:
           tailscale status
 
       - name: Run establish a cf tunnel
-        uses: vmactions/cf-tunnel@main
+        uses: anyvm-org/cf-tunnel@7feeb824fbdc3ad6efb11f426d88a531d9871911
         if: ${{ inputs.server_address == '' }}
         with:
           protocol: http
