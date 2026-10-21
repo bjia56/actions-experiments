@@ -50,6 +50,13 @@ jobs:
           npm install "py@$SPEC"
           echo "installed: $(node -p "require('py/package.json').version")"
 
+      - name: Diagnose setuptools in portable python
+        shell: bash
+        working-directory: work
+        continue-on-error: true
+        run: |
+          node ../.github/scripts/diagnose-setuptools.js "$PWD/state"
+
       - name: Install plugin python requirements
         shell: bash
         working-directory: work
