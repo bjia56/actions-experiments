@@ -16,6 +16,11 @@ on:
         required: false
         type: string
         default: rknn
+      restore_lorem_ipsum:
+        description: work around portable-python zips missing setuptools' 'Lorem ipsum.txt' (zip step dropped filenames with spaces); turn off to test fixed builds
+        required: false
+        type: boolean
+        default: true
 jobs:
   install:
     name: ${{ matrix.os }}
@@ -50,15 +55,10 @@ jobs:
           npm install "py@$SPEC"
           echo "installed: $(node -p "require('py/package.json').version")"
 
-      - name: Diagnose setuptools in portable python
-        shell: bash
-        working-directory: work
-        continue-on-error: true
-        run: |
-          node ../.github/scripts/diagnose-setuptools.js "$PWD/state"
-
       - name: Install plugin python requirements
         shell: bash
         working-directory: work
+        env:
+          RESTORE_LOREM_IPSUM: ${{ inputs.restore_lorem_ipsum }}
         run: |
           node ../.github/scripts/install-plugins.js "$GITHUB_WORKSPACE/scrypted" "$PWD/state" "${{ inputs.exclude }}"
