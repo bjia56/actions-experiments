@@ -1,119 +1,57 @@
-name: Test Scrypted
+name: Scrypted Plugin Install Baseline
 on:
   workflow_dispatch:
     inputs:
-      runner:
+      scrypted_ref:
+        description: scrypted git ref to test
         required: true
         type: string
-        default: ubuntu-24.04
-      scrypted_version:
-        required: true
-        type: string
-        default: latest
-      server_address:
+        default: main
+      portable_python:
+        description: npm spec for portable-python (blank = the version pinned by scrypted's server/package.json)
         required: false
         type: string
-      debug:
+      exclude:
+        description: comma separated plugin directories to skip
         required: false
-        type: boolean
+        type: string
+        default: rknn
 jobs:
-  test:
-    runs-on: ${{ inputs.runner }}
-
+  install:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, windows-latest, ubuntu-24.04, ubuntu-24.04-arm]
     steps:
-      - name: Tailscale Linux
-        if: ${{ runner.os == 'Linux' }}
-        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
+          repository: koush/scrypted
+          ref: ${{ inputs.scrypted_ref }}
+          path: scrypted
 
-      - name: Tailscale MacOS
-        if: ${{ runner.os == 'MacOS' }}
-        run: |
-          brew install tailscale coreutils
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-          sudo -E tailscaled --state=mem: 2>~/tailscaled.log &
-          sudo -E tailscale status --json >/dev/null
-
-          TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-          TAGS_ARG="--advertise-tags=tag:ci"
-          HOSTNAME="$(hostname)"
-          timeout 5m sudo -E tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes
-
-          # Even with this, it seems that the MagicDNS FQDNs don't resolve,
-          # so Mac workers should connect with the server's direct Tailscale IP
-          networksetup -setdnsservers "Ethernet" 100.100.100.100 8.8.8.8
-
-      - name: Tailscale Windows
-        if: ${{ runner.os == 'Windows' }}
+      - name: Install portable-python
         shell: bash
         run: |
-          choco install tailscale
-
-      - name: Tailscale Windows
-        if: ${{ runner.os == 'Windows' }}
-        shell: cmd
-        run: |
-          call refreshenv
-          echo C:\Program Files\Tailscale>>%GITHUB_PATH%
-
-          set TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-          set TAGS_ARG="--advertise-tags=tag:ci"
-          hostname > .tmphostname
-          set /p HOSTNAME= < .tmphostname
-
-          tailscale up %TAGS_ARG% --authkey=%TAILSCALE_AUTHKEY% --hostname=github-%HOSTNAME% --accept-routes
-
-      - name: Set cluster envs
-        shell: bash
-        run: |
-          mkdir -p ~/.scrypted/volume
-          if [[ "${{ inputs.server_address }}" == "" ]]; then
-            # Server mode
-            TAILSCALE_IP=$(tailscale ip -4)
-            echo "SCRYPTED_CLUSTER_MODE=server" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_ADDRESS=${TAILSCALE_IP}" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_SECRET=swordfish123" >> ~/.scrypted/volume/.env
-          else
-            # Client mode
-            echo "SCRYPTED_CLUSTER_MODE=client" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_SERVER=${{ inputs.server_address }}" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_SECRET=swordfish123" >> ~/.scrypted/volume/.env
-            echo "SCRYPTED_CLUSTER_WORKER_NAME=$(hostname)" >> ~/.scrypted/volume/.env
+          SPEC="${{ inputs.portable_python }}"
+          if [ -z "$SPEC" ]; then
+            SPEC=$(node -p "require('./scrypted/server/package.json').dependencies.py")
           fi
+          echo "portable-python: $SPEC"
+          mkdir -p work && cd work
+          npm init -y >/dev/null
+          npm install "py@$SPEC"
+          echo "installed: $(node -p "require('py/package.json').version")"
 
-      - name: Install scrypted server
-        uses: scryptedapp/setup-scrypted@610bd31c99dd4f1ddc2ce1a43ef1bfdfcdae50cd
-        with:
-          version: ${{ inputs.scrypted_version }}
-          healthcheck: ${{ inputs.server_address == '' }}
-
-      - uses: fawazahmed0/action-debug@f439db40bf13513aaf8dac80e61670a97042eb4a
-        if: ${{ inputs.server_address != '' || inputs.debug }}
-
-      - name: Print Tailscale endpoint
-        if: ${{ inputs.server_address == '' && runner.os != 'Windows' }}
-        run: |
-          tailscale status
-
-      - name: Print Tailscale endpoint
-        if: ${{ inputs.server_address == '' && runner.os == 'Windows' }}
-        shell: cmd
-        run: |
-          call refreshenv
-          tailscale status
-
-      - name: Run establish a cf tunnel
-        uses: anyvm-org/cf-tunnel@7feeb824fbdc3ad6efb11f426d88a531d9871911
-        if: ${{ inputs.server_address == '' }}
-        with:
-          protocol: http
-          port: 11080
-
-      - name: Wait to exit
-        if: ${{ inputs.server_address == '' }}
+      - name: Install plugin python requirements
         shell: bash
+        working-directory: work
         run: |
-          while [ ! -f ./continue ]; do sleep 5; done
+          node ../.github/scripts/install-plugins.js "$GITHUB_WORKSPACE/scrypted" "$PWD/state" "${{ inputs.exclude }}"
