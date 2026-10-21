@@ -10,7 +10,9 @@ const { PortablePython } = require(path.join(process.cwd(), 'node_modules', 'py'
 
 const [scrypted, work, excludeArg] = process.argv.slice(2);
 const exclude = new Set((excludeArg || '').split(',').filter(Boolean));
-const defaultVersion = require(path.join(scrypted, 'server', 'bin', 'packaged-python.js')).version;
+// packaged-python.js requires 'py', which isn't installed under the scrypted checkout, so parse the version out
+const defaultVersion = fs.readFileSync(path.join(scrypted, 'server', 'bin', 'packaged-python.js'), 'utf8').match(/version:\s*'([^']+)'/)[1];
+console.log('server default python:', defaultVersion);
 
 const pluginsDir = path.join(scrypted, 'plugins');
 const plugins = fs.readdirSync(pluginsDir).filter(name => {
