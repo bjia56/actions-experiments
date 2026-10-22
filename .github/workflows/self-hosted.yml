@@ -7,7 +7,7 @@ on:
         default: "linux"
 jobs:
   test:
-    runs-on: fromJson('["self-hosted", "battlestation", "${{ inputs.label }}", "x64"]'
+    runs-on: [self-hosted, battlestation, "${{ inputs.label }}", x64]
     steps:
       - name: Setup VS Code dark mode settings
         run: |
