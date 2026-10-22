@@ -1,9 +1,13 @@
 name: Test on Self-Hosted
 on:
   workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "linux"
 jobs:
   test:
-    runs-on: [self-hosted, battlestation, linux, x64]
+    runs-on: fromJson('["self-hosted", "battlestation", "${{ inputs.label }}", "x64"]'
     steps:
       - name: Setup VS Code dark mode settings
         run: |
