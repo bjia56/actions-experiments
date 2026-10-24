@@ -2,12 +2,15 @@ name: Test on Self-Hosted
 on:
   workflow_dispatch:
     inputs:
-      label:
+      os:
         type: string
         default: "linux"
+      arch:
+        type: string
+        default: "x64"
 jobs:
   test:
-    runs-on: [self-hosted, battlestation, "${{ inputs.label }}", x64]
+    runs-on: [self-hosted, battlestation, "${{ inputs.os }}", "${{ inputs.arch }}"]
     steps:
       - name: Setup VS Code dark mode settings
         run: |
