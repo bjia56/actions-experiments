@@ -64,6 +64,9 @@ jobs:
         shell: bash
         working-directory: work
         env:
+          # pypi downloads on hosted runners occasionally time out
+          PIP_RETRIES: 5
+          PIP_DEFAULT_TIMEOUT: 60
           RESTORE_LOREM_IPSUM: ${{ inputs.restore_lorem_ipsum }}
           SMOKE_CHECKS: ${{ inputs.smoke_checks }}
         run: |

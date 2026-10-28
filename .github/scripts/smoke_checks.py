@@ -13,6 +13,7 @@ import base64
 import io
 import json
 import os
+import platform
 import sys
 import tempfile
 import traceback
@@ -90,6 +91,49 @@ TFLITE_MODEL_B64 = (
 )
 
 
+def ncnn_infer(use_vulkan):
+    """Mirrors NCNNPlugin: load .param/.bin, create_extractor, input, extract."""
+    import struct
+
+    import ncnn
+    import numpy as np
+
+    # 1x1 convolution 3 -> 2 channels followed by ReLU; weights are loaded from the .bin like a
+    # real model. Weights use ncnn's raw float32 encoding: 4 zero bytes (type flag) then floats.
+    w = np.array(ONNX_CONV_W, dtype=np.float32)
+    param = "\n".join(
+        [
+            "7767517",
+            "3 3",
+            "Input            data   0 1 data",
+            "Convolution      conv   1 1 data conv0 0=2 1=1 5=0 6=6",
+            "ReLU             relu   1 1 conv0 out0",
+        ]
+    )
+    d = tempfile.mkdtemp(prefix="smoke-")
+    param_file = os.path.join(d, "model.ncnn.param")
+    bin_file = os.path.join(d, "model.ncnn.bin")
+    open(param_file, "w").write(param + "\n")
+    open(bin_file, "wb").write(struct.pack("<I", 0) + w.tobytes())
+
+    net = ncnn.Net()
+    net.opt.use_vulkan_compute = use_vulkan
+    need(net.load_param(param_file) == 0, "load_param")
+    need(net.load_model(bin_file) == 0, "load_model")
+
+    x = np.random.RandomState(0).rand(3, 16, 16).astype(np.float32)
+    ex = net.create_extractor()
+    ex.input("data", ncnn.Mat(np.ascontiguousarray(x)))
+    out = ncnn.Mat()
+    ex.extract("out0", out)
+    got = np.array(out)
+    want = np.maximum(np.einsum("oc,chw->ohw", w, x), 0)
+    need(got.shape == want.shape, f"shape {got.shape} vs {want.shape}")
+    err = float(np.abs(got - want).max())
+    need(np.allclose(got, want, atol=1e-2, rtol=1e-2), f"output mismatch vs numpy reference, max err {err}")
+    return f"ncnn {ncnn.__version__} vulkan={use_vulkan} max err {err:.5f}"
+
+
 def tmpfile(name, data):
     d = tempfile.mkdtemp(prefix="smoke-")
     p = os.path.join(d, name)
@@ -98,6 +142,20 @@ def tmpfile(name, data):
         f.write(data)
     return p
 
+
+# ---------------------------------------------------------------------------------------------
+# child process used by the ncnn vulkan check: exit 0 ok, 3 wrong answer, anything else = unusable
+# ---------------------------------------------------------------------------------------------
+if plugin == "_ncnn_vulkan_child":
+    try:
+        print("[smoke] ncnn vulkan child:", ncnn_infer(use_vulkan=True), flush=True)
+    except AssertionError as e:
+        print("[smoke] ncnn vulkan child: mismatch:", e, flush=True)
+        sys.exit(3)
+    except BaseException as e:  # noqa: B902
+        print(f"[smoke] ncnn vulkan child: {type(e).__name__}: {e}", flush=True)
+        sys.exit(4)
+    sys.exit(0)
 
 # ---------------------------------------------------------------------------------------------
 # interpreter
@@ -334,44 +392,28 @@ elif plugin == "ncnn":
 
     @check
     def net_inference():
-        import struct
+        # CPU path. ncnn defaults to fp16 storage/arithmetic on arm64, hence the loose tolerance.
+        return ncnn_infer(use_vulkan=False)
 
-        import ncnn
-        import numpy as np
+    @check
+    def net_inference_vulkan():
+        # The plugin enables vulkan (net.opt.use_vulkan_compute = True). CI runners have no usable GPU
+        # (macOS VMs expose a paravirtual device that crashes ncnn in vkAllocateMemory), so run it in
+        # a child process: a crash or vulkan failure is a skip, a wrong answer is a failure.
+        import subprocess
 
-        # 1x1 convolution 3 -> 2 channels followed by ReLU; weights are loaded from the .bin like a
-        # real model. Weights use ncnn's raw float32 encoding: 4 zero bytes (type flag) then floats.
-        w = np.array([[0.5, -1.0, 0.25], [1.0, 0.5, -0.5]], dtype=np.float32)
-        param = "\n".join(
-            [
-                "7767517",
-                "3 3",
-                "Input            data   0 1 data",
-                "Convolution      conv   1 1 data conv0 0=2 1=1 5=0 6=6",
-                "ReLU             relu   1 1 conv0 out0",
-            ]
+        r = subprocess.run(
+            [sys.executable, os.path.abspath(__file__), "_ncnn_vulkan_child", target or ""],
+            capture_output=True, text=True, timeout=300,
         )
-        d = tempfile.mkdtemp(prefix="smoke-")
-        param_file = os.path.join(d, "model.ncnn.param")
-        bin_file = os.path.join(d, "model.ncnn.bin")
-        open(param_file, "w").write(param + "\n")
-        open(bin_file, "wb").write(struct.pack("<I", 0) + w.tobytes())
-
-        net = ncnn.Net()
-        net.opt.use_vulkan_compute = True  # as in the plugin; falls back to CPU without vulkan
-        need(net.load_param(param_file) == 0, "load_param")
-        need(net.load_model(bin_file) == 0, "load_model")
-
-        x = np.random.RandomState(0).rand(3, 16, 16).astype(np.float32)
-        ex = net.create_extractor()
-        ex.input("data", ncnn.Mat(np.ascontiguousarray(x)))
-        out = ncnn.Mat()
-        ex.extract("out0", out)
-        got = np.array(out)
-        want = np.maximum(np.einsum("oc,chw->ohw", w, x), 0)
-        need(got.shape == want.shape, f"shape {got.shape} vs {want.shape}")
-        need(np.allclose(got, want, atol=1e-4), "output mismatch vs numpy reference")
-        return f"ncnn {ncnn.__version__}"
+        sys.stdout.write(r.stdout)
+        sys.stderr.write(r.stderr)
+        if r.returncode == 0:
+            return "vulkan ok"
+        if r.returncode == 3:
+            raise AssertionError("vulkan output mismatch vs numpy reference")
+        why = f"killed by signal {-r.returncode}" if r.returncode < 0 else f"exit {r.returncode}"
+        raise Skip(f"vulkan compute unusable on this runner ({why})")
 
     @check
     def huggingface_hub_import():
@@ -405,7 +447,14 @@ elif plugin == "coreml":
             y = mb.conv(x=x, weight=w)
             return mb.relu(x=y, name="out0")
 
-        mlmodel = ct.convert(prog, convert_to="mlprogram")
+        try:
+            mlmodel = ct.convert(prog, convert_to="mlprogram")
+        except RuntimeError as e:
+            # coremltools only ships its native model writer/reader for macOS and linux x64; the
+            # plugin itself requires macOS CoreML
+            if "BlobWriter not loaded" in str(e):
+                raise Skip(f"coremltools {ct.__version__} has no native extensions on this platform ({platform.system()}/{platform.machine()})")
+            raise
         need(mlmodel is not None, "convert returned nothing")
         if sys.platform != "darwin":
             # CoreML inference is only available on macOS
