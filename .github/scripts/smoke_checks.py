@@ -25,6 +25,7 @@ if target:
     sys.path.append(target)
 
 results = []
+REQUIRE_SYSTEM_LIBS = os.environ.get("SMOKE_REQUIRE_SYSTEM_LIBS", "").lower() == "true"
 
 
 class Skip(Exception):
@@ -603,14 +604,24 @@ elif plugin == "python-codecs":
         rgb.save(buf, format="JPEG")
         need(Image.open(io.BytesIO(buf.getvalue())).size == (16, 12), "jpeg roundtrip")
 
+    def system_lib_missing(what, e):
+        """pyvips/PyGObject need system libraries (libvips, GStreamer typelibs) that scrypted's
+        installers provide. The workflow installs them and sets SMOKE_REQUIRE_SYSTEM_LIBS=true, in
+        which case their absence is a failure. They are excluded on Windows by the requirements."""
+        if sys.platform == "win32":
+            raise Skip(f"{what} is not used on Windows (excluded by the plugin requirements)")
+        if REQUIRE_SYSTEM_LIBS:
+            raise AssertionError(f"{what} unavailable although system libraries were installed: {str(e).splitlines()[0]}")
+        raise Skip(f"{what} unavailable (needs system libraries): {str(e).splitlines()[0]}")
+
     @check
     def pyvips_image_ops():
-        # mirrors vipsimage.py; pyvips needs the libvips system library, which scrypted's installers provide
+        # mirrors vipsimage.py: new_from_memory, crop, resize, write_to_memory, write_to_buffer, new_from_buffer
         try:
             import pyvips
             from pyvips import Image
         except (ImportError, OSError) as e:
-            raise Skip(f"pyvips unavailable (needs system libvips): {str(e).splitlines()[0]}")
+            system_lib_missing("pyvips", e)
         w, h = 64, 48
         data = bytes((i * 5) % 256 for i in range(w * h * 3))
         vips = Image.new_from_memory(data, w, h, 3, pyvips.BandFormat.UCHAR)
@@ -619,12 +630,18 @@ elif plugin == "python-codecs":
         need(vips.width == 16 and vips.height == 12, f"size {vips.width}x{vips.height}")
         mem = bytes(memoryview(vips.write_to_memory()))
         need(len(mem) == 16 * 12 * 3, "write_to_memory")
+        rgba = vips.addalpha()
+        need(rgba.bands == 4 and len(bytes(memoryview(rgba.write_to_memory()))) == 16 * 12 * 4, "addalpha")
+        need(vips.extract_band(0, n=2).bands == 2, "extract_band")
         jpg = vips.write_to_buffer(".jpg[Q=80]")
         need(Image.new_from_buffer(jpg, "").width == 16, "jpeg roundtrip")
+        return f"libvips {pyvips.version(0)}.{pyvips.version(1)}.{pyvips.version(2)}"
 
     @check
-    def gstreamer_bindings():
-        # gstreamer.py / gst_generator.py use PyGObject; optional and needs system GStreamer
+    def gstreamer_appsink_pipeline():
+        # mirrors gst_generator.createPipelineIterator: parse_launch ... ! appsink emit-signals=true,
+        # connect new-sample -> pull-sample, PLAYING, bus messages, then gstreamer.py reads the sample
+        # caps and maps the buffer
         try:
             import gi
 
@@ -633,7 +650,56 @@ elif plugin == "python-codecs":
 
             Gst.init(None)
         except Exception as e:
-            raise Skip(f"PyGObject/GStreamer unavailable: {str(e).splitlines()[0]}")
+            system_lib_missing("PyGObject/GStreamer", e)
+
+        import threading
+
+        pipeline = (
+            "videotestsrc num-buffers=5 ! videoconvert ! videoscale ! "
+            "video/x-raw,format=RGB,width=64,height=48 ! "
+            "appsink name=appsink emit-signals=true sync=false"
+        )
+        gst = Gst.parse_launch(pipeline)
+        appsink = gst.get_by_name("appsink")
+        samples = []
+        done = threading.Event()
+
+        def on_new_sample(sink):
+            samples.append(sink.emit("pull-sample"))
+            if len(samples) == 5:
+                done.set()
+            return Gst.FlowReturn.OK
+
+        appsink.connect("new-sample", on_new_sample)
+        gst.set_state(Gst.State.PLAYING)
+        try:
+            bus = gst.get_bus()
+            msg = bus.timed_pop_filtered(
+                20 * Gst.SECOND, Gst.MessageType.EOS | Gst.MessageType.ERROR
+            )
+            need(msg is not None, "pipeline neither finished nor failed in 20s")
+            if msg.type == Gst.MessageType.ERROR:
+                err, debug = msg.parse_error()
+                raise AssertionError(f"gstreamer error: {err}: {debug}")
+            need(done.wait(5) and len(samples) == 5, f"got {len(samples)} samples, expected 5")
+        finally:
+            gst.set_state(Gst.State.NULL)
+
+        caps = samples[0].get_caps()
+        width = caps.get_structure(0).get_value("width")
+        height = caps.get_structure(0).get_value("height")
+        need((width, height) == (64, 48), f"caps {width}x{height}")
+        buf = samples[0].get_buffer()
+        ok, info = buf.map(Gst.MapFlags.READ)
+        need(ok, "unable to map gst buffer")
+        try:
+            data = bytes(info.data)
+        finally:
+            buf.unmap(info)
+        need(len(data) == 64 * 48 * 3, f"buffer is {len(data)} bytes")
+        # videotestsrc defaults to colour bars, so the first row has several distinct pixels
+        pixels = {data[i:i + 3] for i in range(0, 64 * 3, 3)}
+        need(len(pixels) >= 5, f"frame content looks blank ({len(pixels)} distinct pixels in first row)")
         return f"Gst {Gst.version_string()}"
 
 

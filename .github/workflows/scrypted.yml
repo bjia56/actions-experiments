@@ -16,6 +16,11 @@ on:
         required: false
         type: string
         default: rknn
+      install_system_libs:
+        description: install libvips and GObject/GStreamer on Linux and macOS (as scrypted's installers do) so the pyvips and GStreamer checks run instead of skipping
+        required: false
+        type: boolean
+        default: true
       smoke_checks:
         description: after installing, run functional smoke checks that exercise each plugin's dependencies (smoke_checks.py)
         required: false
@@ -59,6 +64,31 @@ jobs:
           npm init -y >/dev/null
           npm install "py@$SPEC"
           echo "installed: $(node -p "require('py/package.json').version")"
+
+      - name: Install system libraries (libvips, GObject, GStreamer)
+        if: ${{ inputs.install_system_libs }}
+        shell: bash
+        run: |
+          # python-codecs' optional requirements (pyvips, PyGObject) and its gstreamer/vips code paths
+          # need these; scrypted's installers provide them. Windows doesn't use them.
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              libvips42t64 libcairo2-dev pkg-config \
+              libgirepository-2.0-dev libgirepository1.0-dev \
+              gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
+              gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            brew install vips gstreamer gobject-introspection cairo pkg-config
+            PREFIX="$(brew --prefix)"
+            # pyvips dlopen()s libvips by name; keep the default fallback dirs too
+            echo "DYLD_FALLBACK_LIBRARY_PATH=$PREFIX/lib:/usr/local/lib:/usr/lib" >> "$GITHUB_ENV"
+            echo "GI_TYPELIB_PATH=$PREFIX/lib/girepository-1.0" >> "$GITHUB_ENV"
+            echo "PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig" >> "$GITHUB_ENV"
+          fi
+          if [ "$RUNNER_OS" != "Windows" ]; then
+            echo "SMOKE_REQUIRE_SYSTEM_LIBS=true" >> "$GITHUB_ENV"
+          fi
 
       - name: Install plugin python requirements
         shell: bash
